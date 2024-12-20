@@ -1,0 +1,3 @@
+[submodule "ts"]
+	path = ts
+	url = git@github.com:beholdr/maska.git
