@@ -52,7 +52,7 @@ func (m *Mask) findMask(value string) string {
 			return v[0]
 		}
 
-		// 获取最后���个mask处理后的长度作为参考
+		// 获取最后个mask处理后的长度作为参考
 		lastMask := v[len(v)-1]
 		referenceLen := len(m.process(value, lastMask))
 
@@ -105,23 +105,40 @@ func (m *Mask) process(value string, maskRaw string) string {
 	var result []rune
 	tokens := m.tokens
 	offset := 1
+	if m.reversed {
+		offset = -1
+	}
 
 	maskRunes := []rune(escaped.mask)
 	valueRunes := []rune(value)
 
 	lastMaskChar := 0
+	if m.reversed {
+		lastMaskChar = len(maskRunes) - 1
+	}
 
 	var lastRawMaskChar rune
 	repeatedPos := -1
 	maskPos := 0
 	valuePos := 0
+	if m.reversed {
+		maskPos = len(maskRunes) - 1
+		valuePos = len(valueRunes) - 1
+	}
 
 	check := func() bool {
+		if m.reversed {
+			return maskPos > -1 && valuePos > -1
+		}
 		return maskPos < len(maskRunes) && valuePos < len(valueRunes)
 	}
 
 	push := func(r rune) {
-		result = append(result, r)
+		if m.reversed {
+			result = append([]rune{r}, result...)
+		} else {
+			result = append(result, r)
+		}
 	}
 
 	multipleMatched := false
@@ -204,7 +221,7 @@ func (m *Mask) process(value string, maskRaw string) string {
 }
 
 // Completed checks if the value matches the full mask pattern
-func (m *Mask) Completed(value string) bool {
+func (m *Mask) Validate(value string) bool {
 	mask := m.findMask(value)
 
 	if m.mask == nil || mask == "" {
