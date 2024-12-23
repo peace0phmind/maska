@@ -125,5 +125,6 @@ func TestCustomMaskValidate(t *testing.T) {
 	assert.Equal(t, mask.Validate("12.3"), true)
 	assert.Equal(t, mask.Validate("123.4"), true)
 	assert.Equal(t, mask.Validate("1234.5"), true)
+	assert.Equal(t, mask.Validate("12345"), false)
 	assert.Equal(t, mask.Validate("12345.6"), false)
 }
