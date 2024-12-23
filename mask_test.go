@@ -128,3 +128,66 @@ func TestCustomMaskValidate(t *testing.T) {
 	assert.Equal(t, mask.Validate("12345"), false)
 	assert.Equal(t, mask.Validate("12345.6"), false)
 }
+
+func TestCustomDOValidate(t *testing.T) {
+	tokens := Tokens{
+		"D": {
+			Pattern:  regexp.MustCompile(`[0-9]`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+		"O": {
+			Pattern:  regexp.MustCompile(`[0-7]`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+		"d": {
+			Pattern:  regexp.MustCompile(`[0-9]`),
+			Optional: true,
+			Multiple: false,
+			Repeated: false,
+		},
+		".": {
+			Pattern:  regexp.MustCompile(`\.`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+	}
+	mask := NewMask("dddD.O", tokens, true)
+
+	assert.Equal(t, mask.Validate("1234.7"), true)
+	assert.Equal(t, mask.Validate("1234.8"), false)
+	assert.Equal(t, mask.Validate("4.9"), false)
+}
+
+func TestCustomHValidate(t *testing.T) {
+	tokens := Tokens{
+		"X": {
+			Pattern:  regexp.MustCompile(`[0-9A-Fa-f]`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+		"H": {
+			Pattern:  regexp.MustCompile(`H`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+		"-": {
+			Pattern:  regexp.MustCompile(`-`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+	}
+	mask := NewMask("XXXXH-XXXXH", tokens, true)
+
+	assert.Equal(t, mask.Validate("1234H-abcdH"), true)
+	assert.Equal(t, mask.Validate("0012H-00afH"), true)
+	assert.Equal(t, mask.Validate("1234H-abcH"), false)
+	assert.Equal(t, mask.Validate("g234H-abcdH"), false)
+}
