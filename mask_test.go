@@ -90,12 +90,40 @@ func TestCustomMask(t *testing.T) {
 	assert.Equal(t, mask.Masked("1234.5"), "1234.5")
 	assert.Equal(t, mask.Masked("12345.6"), "2345.6")
 
+}
+
+func TestCustomMaskValidate(t *testing.T) {
+	tokens := Tokens{
+		"D": {
+			Pattern:  regexp.MustCompile(`[0-9]`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+		"d": {
+			Pattern:  regexp.MustCompile(`[0-9]`),
+			Optional: true,
+			Multiple: false,
+			Repeated: false,
+		},
+		".": {
+			Pattern:  regexp.MustCompile(`\.`),
+			Optional: false,
+			Multiple: false,
+			Repeated: false,
+		},
+	}
+	mask := NewMask("dddD.D", tokens, true)
+
 	assert.Equal(t, mask.Validate(".1"), false)
 	assert.Equal(t, mask.Validate("1"), false)
+	assert.Equal(t, mask.Validate("12"), false)
+	assert.Equal(t, mask.Validate(".12"), false)
 	assert.Equal(t, mask.Validate("1."), false)
-	assert.Equal(t, mask.Masked("1.1"), true)
-	assert.Equal(t, mask.Masked("12.3"), true)
-	assert.Equal(t, mask.Masked("123.4"), true)
-	assert.Equal(t, mask.Masked("1234.5"), true)
-	assert.Equal(t, mask.Masked("12345.6"), false)
+	assert.Equal(t, mask.Validate("1.23"), false)
+	assert.Equal(t, mask.Validate("1.1"), true)
+	assert.Equal(t, mask.Validate("12.3"), true)
+	assert.Equal(t, mask.Validate("123.4"), true)
+	assert.Equal(t, mask.Validate("1234.5"), true)
+	assert.Equal(t, mask.Validate("12345.6"), false)
 }

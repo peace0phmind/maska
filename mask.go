@@ -220,20 +220,47 @@ func (m *Mask) process(value string, maskRaw string) string {
 	return string(result)
 }
 
-// Completed checks if the value matches the full mask pattern
+// Validate checks if the value matches the full mask pattern
 func (m *Mask) Validate(value string) bool {
 	mask := m.findMask(value)
-
 	if m.mask == nil || mask == "" {
 		return false
 	}
 
-	processedLen := len(m.process(value, mask))
+	// Process the value with the mask
+	processed := m.process(value, mask)
 
-	switch v := m.mask.(type) {
-	case string:
-		return processedLen >= len(v)
-	default:
-		return processedLen >= len(mask)
+	// Get the minimum required length by counting non-optional tokens
+	escaped := m.escapeMask(mask)
+	minLength := 0
+	for i, ch := range escaped.mask {
+		// Skip escaped positions
+		isEscaped := false
+		for _, pos := range escaped.escaped {
+			if pos == i {
+				isEscaped = true
+				break
+			}
+		}
+		if isEscaped {
+			minLength++
+			continue
+		}
+
+		// Check if it's a token
+		if token, ok := m.tokens[string(ch)]; ok {
+			if !token.Optional {
+				minLength++
+			}
+		} else {
+			minLength++
+		}
 	}
+
+	// For reversed masks, we need to ensure the processed value
+	// matches both the minimum length and the actual input length
+	processedLen := len(processed)
+	valueLen := len(value)
+
+	return processedLen >= minLength && processedLen == valueLen
 }
