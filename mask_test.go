@@ -161,6 +161,10 @@ func TestCustomDOValidate(t *testing.T) {
 	assert.Equal(t, mask.Validate("1234.7"), true)
 	assert.Equal(t, mask.Validate("1234.8"), false)
 	assert.Equal(t, mask.Validate("4.9"), false)
+
+	mask = NewMask("dddD.dD", tokens, true)
+	assert.Equal(t, mask.Validate("1234.56"), true)
+	assert.Equal(t, mask.Validate("1.1"), true)
 }
 
 func TestCustomHValidate(t *testing.T) {
